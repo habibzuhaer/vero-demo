@@ -5,11 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>vero-demo — backtest ideas, keep the vault offline</title>
 <meta name="description" content="Autonomous backtest app: indicator strategies, queue, web UI. Synthetic sample included — production data/ stays private." />
-<meta name="theme-color" content="#111" />
 <meta property="og:title" content="vero-demo — backtest ideas, keep the vault offline" />
 <meta property="og:description" content="Autonomous backtest app: indicator strategies, queue, web UI. Synthetic sample included — production data/ stays private." />
-<meta property="og:image" content="assets/brag.jpg" />
-<meta property="og:type" content="website" />
+<meta property="og:image" content="assets/ui.jpg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;900&family=Geist+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -17,18 +15,16 @@
 </head>
 <body>
 <a class="skip" href="#main">skip to content</a>
-
 <header class="hero">
   <div class="topbar">
     <span class="mark">/vero-demo</span>
-    <nav aria-label="primary">
+    <nav>
       <a href="#product">product</a>
       <a href="#features">features</a>
       <a href="https://github.com/habibzuhaer/vero-demo" target="_blank" rel="noopener">github</a>
     </nav>
   </div>
-
-  <div class="hero-grid" id="main">
+  <div class="hero-main" id="main">
     <div>
       <p class="kicker">public snapshot · no secrets</p>
       <h1>backtest.<br/><span class="emph">learn.</span></h1>
@@ -38,71 +34,63 @@
         <a class="btn ghost" href="#product">See the UI</a>
       </div>
     </div>
-
-    <aside class="phone" aria-label="launch video">
-      <video id="hero-vid" src="assets/brag.mp4" poster="assets/hero-poster.jpg" muted loop playsinline preload="auto"></video>
-      <div class="phone-controls">
-        <button id="hero-playback" type="button" aria-label="play video">
-          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
-        </button>
-        <button id="hero-mute" class="mute" type="button" aria-label="unmute video" aria-pressed="true">
-          <svg class="icon-muted" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3zm13.59 3l2.7-2.7-1.41-1.42L15.17 10.6 12.46 7.88l-1.41 1.41 2.71 2.71-2.71 2.71 1.41 1.41 2.71-2.7 2.71 2.7 1.41-1.41-2.7-2.7z"/></svg>
-          <svg class="icon-sound" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3zm10.5 3a4.5 4.5 0 00-2.5-4.03v8.05A4.5 4.5 0 0013.5 12z"/></svg>
-          <span>tap for sound</span>
-        </button>
+    <div class="stage">
+      <div class="stage-frame"><img src="assets/ui.jpg" alt="vero-demo UI" /></div>
+      <div class="float-vid">
+        <video id="hero-vid" src="assets/brag.mp4" poster="assets/hero-poster.jpg" muted loop playsinline preload="auto"></video>
+        <div class="vid-btns">
+          <button id="hero-playback" type="button" aria-label="play video">
+            <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+          </button>
+          <button id="hero-mute" class="mute" type="button" aria-label="unmute">
+            <svg class="icon-muted" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3zm13.59 3l2.7-2.7-1.41-1.42L15.17 10.6 12.46 7.88l-1.41 1.41 2.71 2.71-2.71 2.71 1.41 1.41 2.71-2.7 2.71 2.7 1.41-1.41-2.7-2.7z"/></svg>
+            <svg class="icon-sound" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 4V5L7 9H3zm10.5 3a4.5 4.5 0 00-2.5-4.03v8.05A4.5 4.5 0 0013.5 12z"/></svg>
+            <span>sound</span>
+          </button>
+        </div>
       </div>
-    </aside>
-  </div>
-
-  <div class="hero-foot">
-    <div>
-      <pre class="install"><button class="copy" type="button" data-copy="git clone https://github.com/habibzuhaer/vero-demo.git">copy</button><code><span class="prompt">$</span> git clone https://github.com/habibzuhaer/vero-demo.git</code></pre>
     </div>
-    <div class="meta"><span class="dot"></span>full source · .env kept local</div>
+  </div>
+  <div class="hero-foot">
+    <pre class="install"><button class="copy" type="button" data-copy="git clone https://github.com/habibzuhaer/vero-demo.git">copy</button><code><span class="prompt">$</span> git clone https://github.com/habibzuhaer/vero-demo.git</code></pre>
+    <div class="meta"><span class="dot"></span>full source · .env stays local</div>
   </div>
 </header>
 
-<section class="band" id="product">
-  <div class="band-inner">
-    <h2>the product, not the pitch.</h2>
-    <p>Real UI from this repo — captured locally, no tokens, no live balances.</p>
-    <div class="shots">
-      <figure class="shot"><img src="assets/ui.jpg" alt="vero-demo main UI" /></figure>
-      <figure class="shot"><img src="assets/ui2.jpg" alt="vero-demo secondary UI" /></figure>
-    </div>
+<section class="band" id="product"><div class="inner">
+  <h2>the product, not the pitch.</h2>
+  <p class="intro">Real UI from this repo — captured locally. No tokens, no live balances.</p>
+  <div class="shots">
+    <figure class="shot"><img src="assets/ui.jpg" alt="main UI" /></figure>
+    <figure class="shot"><img src="assets/ui2.jpg" alt="secondary UI" /></figure>
   </div>
-</section>
+</div></section>
 
-<section class="band" id="features" style="padding-top:0">
-  <div class="band-inner">
-    <h2>what ships.</h2>
-    <div class="grid3">
-      <article class="card"><div class="n">01</div><h3>Strategies</h3><p>RSI, MACD, Bollinger squeeze, Stoch, EMA signal series.</p></article>
-      <article class="card"><div class="n">02</div><h3>Web shell</h3><p>Modes for smoke / daily / learn without shipping your DB.</p></article>
-      <article class="card"><div class="n">03</div><h3>Offline vault</h3><p>data/ excluded from the public snapshot on purpose.</p></article>
-    </div>
-    <div class="safe">
-      <span class="pill">no .env</span>
-      <span class="pill">no data/ vault</span>
-      <span class="pill">no API secrets</span>
-      <span class="pill">public snapshot</span>
-    </div>
+<section class="band" id="features"><div class="inner">
+  <h2>what ships.</h2>
+  <div class="grid3">
+    <article class="card"><div class="n">01</div><h3>Strategies</h3><p>RSI, MACD, Bollinger squeeze, Stoch, EMA signal series.</p></article>
+    <article class="card"><div class="n">02</div><h3>Web shell</h3><p>Modes for smoke / daily / learn without shipping your DB.</p></article>
+    <article class="card"><div class="n">03</div><h3>Offline vault</h3><p>data/ excluded from the public snapshot on purpose.</p></article>
   </div>
-</section>
+  <div class="safe">
+    <span class="pill">no .env</span>
+    <span class="pill">no data/ vault</span>
+    <span class="pill">no API secrets</span>
+    <span class="pill">public snapshot</span>
+  </div>
+</div></section>
 
-<section class="band" style="padding-top:0">
-  <div class="band-inner">
-    <h2>run it.</h2>
-    <p>After clone, keep secrets in a local <code>.env</code> only.</p>
-    <pre class="install" style="margin-top:18px"><button class="copy" type="button" data-copy="cp .env.example .env && ./start.sh preflight">copy</button><code>cp .env.example .env && ./start.sh preflight</code></pre>
-  </div>
-</section>
+<section class="band"><div class="inner">
+  <h2>run it.</h2>
+  <p class="intro">After clone, keep secrets in a local .env only.</p>
+  <pre class="install" style="margin-top:18px"><button class="copy" type="button" data-copy="cp .env.example .env && ./start.sh preflight">copy</button><code>cp .env.example .env && ./start.sh preflight</code></pre>
+</div></section>
 
 <footer class="foot">
-  <span>presentation style inspired by <a href="https://github.com/latent-spaces/brag">/brag</a></span>
+  <span>style inspired by <a href="https://github.com/latent-spaces/brag">/brag</a></span>
   <span><a href="https://github.com/habibzuhaer/vero-demo">github.com/habibzuhaer/vero-demo</a></span>
 </footer>
 <script src="main.js"></script>
-</body>
-</html>
+</body></html>
