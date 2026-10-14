@@ -1,7 +1,1 @@
-# brag plan — vero-demo
-- Angle: backtest ideas without shipping your production vault.
-- Hook: “backtest the idea. keep the keys.”
-- Highlights: signals → backtest core → tiny sample
-- Punchline: demo hard. secrets soft.
-- Tone: default
-- Duration: ~20s landscape
+Live localhost capture · 2026-10-14T23:10:04+02:00

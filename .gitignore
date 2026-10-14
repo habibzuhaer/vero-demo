@@ -29,3 +29,5 @@ pump_prep/out/cg_platforms_cache.json
 crypto_funds_tracker/out/
 research/**/.venv/
 research/**/out/trades.csv
+docs/assets/live.webm
+brag-output/work/
