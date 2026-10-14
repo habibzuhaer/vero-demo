@@ -1,1 +1,3 @@
-vero-demo: slim backtest slice with classic indicator strategies and synthetic bars — no Telegram tokens, no giant DB. https://habibzuhaer.github.io/vero-demo/
+/vero-demo: Autonomous backtest app: indicator strategies, queue, web UI. Synthetic sample included — production data/ stays private.
+https://habibzuhaer.github.io/vero-demo/
+https://github.com/habibzuhaer/vero-demo
