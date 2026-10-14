@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>/vero-demo — you built it. now brag.</title>
+<meta name="description" content="Slim VERO slice: indicator strategies, helpers, synthetic bars. <strong>No 11GB vault.</strong>" />
+<meta name="theme-color" content="#e26a3a" />
+<meta property="og:title" content="/vero-demo — you built it. now brag." />
+<meta property="og:description" content="Slim VERO slice: indicator strategies, helpers, synthetic bars. <strong>No 11GB vault.</strong>" />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="assets/brag.jpg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;900&family=Geist+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">skip to content</a>
+
+<header class="hero">
+  <div class="topbar">
+    <span class="mark">/vero-demo</span>
+    <nav aria-label="primary">
+      <a href="#examples">highlights</a>
+      <a href="#install">clone</a>
+      <a href="https://github.com/habibzuhaer/vero-demo" target="_blank" rel="noopener">github</a>
+    </nav>
+  </div>
+
+  <div class="hero-main" id="main">
+    <div class="hero-body">
+      <h1 class="hero-headline">backtest the idea.<br/>now <span class="emph">brag.</span></h1>
+      <p class="hero-sub">Slim VERO slice: indicator strategies, helpers, synthetic bars. <strong>No 11GB vault.</strong></p>
+    </div>
+    <aside class="hero-video" aria-label="brag launch video">
+      <video
+        id="hero-vid"
+        class="hero-video-media"
+        src="assets/brag.mp4"
+        poster="assets/hero-poster.jpg"
+        muted
+        loop
+        playsinline
+        preload="auto"
+      ></video>
+      <div class="hero-controls">
+        <button id="hero-playback" class="hero-control hero-playback" type="button" aria-label="play brag video" title="play brag video" data-mode="play">
+          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+        </button>
+        <button id="hero-mute" class="hero-control hero-mute" type="button" aria-label="unmute brag video" aria-pressed="true">
+          <svg class="icon-muted" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3zm13.59 3l2.7-2.7-1.41-1.42L15.17 10.6 12.46 7.88l-1.41 1.41 2.71 2.71-2.71 2.71 1.41 1.41 2.71-2.7 2.71 2.7 1.41-1.41-2.7-2.7z"/></svg>
+          <svg class="icon-sound" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3zm10.5 3a4.5 4.5 0 00-2.5-4.03v8.05A4.5 4.5 0 0013.5 12zm-2.5-9v2.06A7 7 0 0117 12a7 7 0 01-6 6.92V21A9 9 0 0019 12 9 9 0 0011 3z"/></svg>
+          <span class="hero-mute-label">tap for sound</span>
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="hero-foot" id="install">
+    <div class="install-stack">
+      <span class="install-label">clone · public · no secrets</span>
+      <pre class="install" aria-label="clone command"><span class="copy-wrap"><button class="copy" type="button" data-copy="git clone https://github.com/habibzuhaer/vero-demo.git">copy</button></span><code><span class="prompt">$</span> git clone https://github.com/habibzuhaer/vero-demo.git</code></pre>
+      <span class="install-label">presentation made like <a href="https://github.com/latent-spaces/brag" target="_blank" rel="noopener">/brag</a></span>
+    </div>
+    <div class="hero-meta"><span class="dot" aria-hidden="true"></span>20s launch video · github.com/habibzuhaer/vero-demo</div>
+  </div>
+</header>
+
+<main>
+  <section class="section" id="examples">
+    <div class="section-inner">
+      <h2 class="section-title">what twenty seconds looks like.</h2>
+      <div class="example-grid">
+        <article class="example-card"><h3>01</h3><p>RSI / MACD / Bollinger / Stoch / EMA — inspectable.</p></article>
+        <article class="example-card"><h3>02</h3><p>Backtest helpers without brokerage wiring.</p></article>
+        <article class="example-card"><h3>03</h3><p>DEMO_1h.csv keeps the repo tiny and safe.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section dark">
+    <div class="section-inner">
+      <h2 class="section-title">now go brag.</h2>
+      <p class="section-lead">We used a /brag-slim style pipeline on this repo: plan → composition → render → share copy. The looping video in the hero is the deliverable.</p>
+      <pre class="install" aria-label="repo link"><code>https://github.com/habibzuhaer/vero-demo</code></pre>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <span>inspired by <a href="https://github.com/latent-spaces/brag">latent-spaces/brag</a></span>
+  <span>no keys · no .env · public demo</span>
+</footer>
+<script src="main.js"></script>
+<style>
+/* minimal extras if brag classes differ */
+.example-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:1.5rem}
+.example-card{background:var(--dark-bg-elev, #1a1a1a);border:1px solid var(--dark-rule,#333);border-radius:14px;padding:1.2rem;color:var(--dark-ink,#eee)}
+.example-card h3{margin:0 0 .4rem;font-family:"Geist Mono",monospace;font-size:.85rem;opacity:.7}
+.example-card p{margin:0;line-height:1.35}
+.section{padding:clamp(48px,8vw,96px) clamp(20px,4vw,40px)}
+.section.dark{background:var(--dark-bg,#14110f);color:var(--dark-ink,#f5f5f5)}
+.section-inner{max-width:1100px;margin:0 auto}
+.section-title{font-size:clamp(2rem,5vw,3.5rem);letter-spacing:-.03em;margin:0 0 1rem;text-transform:lowercase}
+.section-lead{max-width:48ch;font-size:1.15rem;opacity:.8;line-height:1.4}
+.site-foot{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:24px clamp(20px,4vw,40px);font-family:"Geist Mono",monospace;font-size:12px;background:var(--dark-bg,#14110f);color:var(--dark-ink-soft,#aaa)}
+.site-foot a{color:inherit}
+</style>
+</body>
+</html>

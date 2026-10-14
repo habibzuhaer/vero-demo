@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VERO — Launch</title>
+  <style>
+    :root {
+      --bg: #0f1410;
+      --panel: #171d18;
+      --ink: #e6efe6;
+      --muted: #8a9a8c;
+      --line: #2a352c;
+      --ok: #3d9a5f;
+      --bad: #c45c4a;
+      --accent: #c4a35a;
+      --font: "IBM Plex Sans", "Segoe UI", sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1c2a1e 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #243028 0%, transparent 50%),
+        var(--bg);
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 3rem;
+    }
+    h1 {
+      font-size: 2.4rem;
+      letter-spacing: 0.04em;
+      margin: 0 0 0.35rem;
+      font-weight: 600;
+    }
+    .sub { color: var(--muted); margin: 0 0 1.75rem; line-height: 1.45; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 1.75rem;
+    }
+    button {
+      font: inherit;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      padding: 0.65rem 1rem;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    button:hover { border-color: var(--accent); }
+    button.primary {
+      background: var(--accent);
+      color: #1a1508;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    .grid {
+      display: grid;
+      gap: 0.65rem;
+    }
+    .agent {
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel) 92%, black);
+      padding: 0.85rem 1rem;
+      display: grid;
+      grid-template-columns: 7rem 1fr auto;
+      gap: 0.5rem 0.75rem;
+      align-items: baseline;
+    }
+    .agent .name {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .agent .msg { font-size: 0.95rem; }
+    .agent .badge {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      padding: 0.2rem 0.45rem;
+      border: 1px solid var(--line);
+    }
+    .agent.ok .badge { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, var(--line)); }
+    .agent.bad .badge { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 50%, var(--line)); }
+    .meta {
+      margin-top: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .err {
+      color: var(--bad);
+      margin-bottom: 1rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+    @media (max-width: 560px) {
+      .agent { grid-template-columns: 1fr auto; }
+      .agent .msg { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>VERO</h1>
+    <p class="sub">Локальный launch · независимые агенты контроля (server / prefetch / store / modules)</p>
+    <div id="err" class="err" hidden></div>
+    <div class="actions">
+      <button type="button" class="primary" id="btn-ui">Открыть UI :8900</button>
+      <button type="button" id="btn-ensure">Поднять server</button>
+      <button type="button" id="btn-pf">Prefetch Full (resume)</button>
+      <button type="button" class="ghost" id="btn-pf-stop">Stop prefetch</button>
+      <button type="button" class="ghost" id="btn-refresh">Refresh</button>
+    </div>
+    <div id="agents" class="grid"></div>
+    <div id="meta" class="meta">connecting…</div>
+  </div>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    async function api(path, opts) {
+      const r = await fetch(path, {
+        headers: { "Content-Type": "application/json" },
+        ...opts,
+      });
+      const t = await r.text();
+      let j;
+      try { j = JSON.parse(t); } catch { j = { raw: t }; }
+      if (!r.ok) throw new Error(j.detail || j.error || t || r.status);
+      return j;
+    }
+    function render(st) {
+      $("err").hidden = true;
+      const box = $("agents");
+      box.innerHTML = "";
+      const agents = st.agents || {};
+      const order = ["server", "prefetch", "backtest", "store", "modules"];
+      const keys = [...order.filter((k) => k in agents), ...Object.keys(agents).filter((k) => !order.includes(k))];
+      for (const k of keys) {
+        const a = agents[k] || {};
+        const el = document.createElement("div");
+        el.className = "agent " + (a.ok ? "ok" : "bad");
+        el.innerHTML =
+          `<div class="name">${a.name || k}</div>` +
+          `<div class="msg">${a.message || "—"}</div>` +
+          `<div class="badge">${a.ok ? "OK" : "FAIL"}</div>`;
+        box.appendChild(el);
+      }
+      const s = st.supervisor || {};
+      $("meta").textContent =
+        `launch ${s.launch || ""} · ui ${s.ui || ""} · updated ${st.updated_at || "—"} · started ${s.started_at || "—"}`;
+    }
+    async function refresh() {
+      try {
+        render(await api("/api/status"));
+      } catch (e) {
+        $("err").hidden = false;
+        $("err").textContent = "supervisor offline: " + e.message;
+      }
+    }
+    $("btn-refresh").onclick = refresh;
+    $("btn-ui").onclick = async () => {
+      try {
+        const j = await api("/api/open-ui", { method: "POST", body: "{}" });
+        if (j.url) window.open(j.url, "_blank");
+      } catch (e) { alert(e.message); }
+    };
+    $("btn-ensure").onclick = async () => {
+      try { await api("/api/server/ensure", { method: "POST", body: "{}" }); await refresh(); }
+      catch (e) { alert(e.message); }
+    };
+    $("btn-pf").onclick = async () => {
+      try { await api("/api/prefetch/start", { method: "POST", body: "{}" }); await refresh(); }
+      catch (e) { alert(e.message); }
+    };
+    $("btn-pf-stop").onclick = async () => {
+      try { await api("/api/prefetch/stop", { method: "POST", body: "{}" }); await refresh(); }
+      catch (e) { alert(e.message); }
+    };
+    refresh();
+    setInterval(refresh, 4000);
+  </script>
+</body>
+</html>

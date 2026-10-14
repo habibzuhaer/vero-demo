@@ -1,0 +1,1 @@
+vero-demo: slim backtest slice with classic indicator strategies and synthetic bars — no Telegram tokens, no giant DB. https://habibzuhaer.github.io/vero-demo/

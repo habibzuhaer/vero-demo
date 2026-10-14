@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VERO — XTB Backtest Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/app.css?v=9" />
+  <link rel="stylesheet" href="/static/home.css?v=9" />
+  <script src="/static/app.js?v=9" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="hdr">
+      <div class="brand">
+        <span class="logo">V</span>
+        <div>
+          <strong>VERO</strong>
+          <span class="muted">XTB · strategies · learn</span>
+        </div>
+      </div>
+      <div id="job-pill" class="pill idle">idle</div>
+    </header>
+
+    <div id="progress" class="progress legacy-progress" hidden aria-hidden="true">
+      <div class="progress-row">
+        <span id="prog-msg">—</span>
+        <span id="prog-count" class="mono">0 / 0</span>
+        <span id="prog-pct" class="mono">0%</span>
+      </div>
+      <div class="track"><div id="prog-bar" class="bar"></div></div>
+    </div>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="backtest">Backtest</button>
+      <button class="tab" data-tab="settings">Settings</button>
+      <button class="tab" data-tab="chart">Chart</button>
+      <button class="tab" data-tab="signals">Signals / Paper</button>
+      <button class="tab" data-tab="results">Results</button>
+      <button class="tab" data-tab="top" title="Auto-рейтинг бэктестов по OOS % и ваш ручной watchlist для сигналов. / Auto ranking + personal watchlist.">My Top</button>
+      <button class="tab" data-tab="history">History</button>
+      <button class="tab" data-tab="learn">Learn</button>
+    </nav>
+
+    <main>
+      <!-- BACKTEST / HOME -->
+      <section id="tab-backtest" class="panel active">
+        <header class="home-hero">
+          <div class="hero-main">
+            <h1>VERO</h1>
+            <p class="hero-sub">Автономний бэктест XTB · Autonomous XTB backtest</p>
+          </div>
+          <div class="hero-chips">
+            <div id="offline-mode-chip" class="chip offline">режим…</div>
+            <div id="autonomy-banner" class="chip autonomy">дані…</div>
+            <div id="catalog-stats" class="chip">каталог…</div>
+            <div id="scheduler-stats" class="chip">сесія…</div>
+            <div id="candle-settings-chip" class="chip candle-chip">candles …</div>
+          </div>
+        </header>
+
+        <nav class="toolbar" aria-label="Quick actions">
+          <button type="button" class="tool-btn" data-act="bootstrap" title="Bootstrap">
+            <span class="tool-icon">📦</span>
+            <span class="tool-label">Bootstrap</span>
+          </button>
+          <button type="button" class="tool-btn" data-act="preflight" title="Preflight">
+            <span class="tool-icon">🔍</span>
+            <span class="tool-label">Preflight</span>
+          </button>
+          <button type="button" class="tool-btn" data-act="smoke" title="Smoke">
+            <span class="tool-icon">⚡</span>
+            <span class="tool-label">Smoke</span>
+          </button>
+          <span class="toolbar-sep" aria-hidden="true"></span>
+          <button type="button" class="tool-btn accent" data-act="resume" title="Resume">
+            <span class="tool-icon">▶</span>
+            <span class="tool-label">Resume</span>
+          </button>
+          <button type="button" class="tool-btn warn" data-act="stop" title="Stop">
+            <span class="tool-icon">⏸</span>
+            <span class="tool-label">Stop</span>
+          </button>
+        </nav>
+
+        <section id="bt-progress-strip" class="bt-progress-strip idle" aria-live="polite">
+          <div class="bt-progress-head">
+            <span id="bt-prog-label" class="bt-prog-label">Backtest</span>
+            <span id="bt-prog-status" class="bt-prog-status mono">IDLE</span>
+            <span id="bt-prog-count" class="bt-prog-count mono">0 / 0</span>
+            <span id="bt-prog-pct" class="bt-prog-pct mono">0%</span>
+          </div>
+          <div class="track bt-progress-track"><div id="bt-prog-bar" class="bar"></div></div>
+          <p id="bt-prog-msg" class="bt-prog-msg mono">немає активного прогону / no active run</p>
+        </section>
+
+        <section id="pf-progress-strip" class="bt-progress-strip idle pf-strip" aria-live="polite">
+          <div class="bt-progress-head">
+            <span class="bt-prog-label">Prefetch · local data</span>
+            <span id="pf-prog-status" class="bt-prog-status mono">IDLE</span>
+            <span id="pf-prog-count" class="bt-prog-count mono">0 / 0</span>
+            <span id="pf-prog-pct" class="bt-prog-pct mono">0%</span>
+          </div>
+          <div class="track bt-progress-track"><div id="pf-prog-bar" class="bar"></div></div>
+          <p id="pf-prog-msg" class="bt-prog-msg mono">докачка 1h/4h/1d + індикатори · idle</p>
+          <div class="pf-actions">
+            <button type="button" class="btn primary" id="home-prefetch-full-btn">⬇ Full catalog</button>
+            <button type="button" class="btn" id="home-prefetch-seed-btn">Seed (~20)</button>
+            <button type="button" class="btn ghost" id="home-prefetch-stop-btn">Stop</button>
+          </div>
+        </section>
+
+        <div class="dashboard">
+          <section class="card launch-card" id="launch-widget" aria-labelledby="launch-title">
+            <div class="card-head">
+              <span class="card-num">01</span>
+              <div>
+                <h2 id="launch-title">Запуск / Launch</h2>
+                <p class="card-desc">Full · 7 strat · 1h / 4h / 1d</p>
+              </div>
+            </div>
+
+            <p class="field-label">Тривалість / Duration — клік = старт · candles з Settings</p>
+            <div class="duration-grid" id="duration-grid">
+              <button type="button" class="dur-btn" data-hours="2">
+                <span class="dur-h">2</span>
+                <span class="dur-unit">год / h</span>
+              </button>
+              <button type="button" class="dur-btn" data-hours="4">
+                <span class="dur-h">4</span>
+                <span class="dur-unit">год / h</span>
+              </button>
+              <button type="button" class="dur-btn" data-hours="6">
+                <span class="dur-h">6</span>
+                <span class="dur-unit">год / h</span>
+              </button>
+              <button type="button" class="dur-btn" data-hours="8">
+                <span class="dur-h">8</span>
+                <span class="dur-unit">год / h</span>
+              </button>
+              <button type="button" class="dur-btn cycle" data-hours="0">
+                <span class="dur-h">∞</span>
+                <span class="dur-unit">цикл / cycle</span>
+              </button>
+            </div>
+
+            <div class="card-foot launch-foot">
+              <button type="button" id="btn-resume" class="btn primary foot-btn">▶ Resume</button>
+              <button type="button" id="btn-stop" class="btn foot-btn stop-btn">⏸ Stop</button>
+            </div>
+          </section>
+
+          <section class="card status-card" id="status-widget" aria-labelledby="status-title">
+            <div class="card-head status-head">
+              <span class="card-num">02</span>
+              <div class="status-head-text">
+                <h2 id="status-title">Статус / Status</h2>
+                <p class="status-hint" id="st-hint">…</p>
+              </div>
+              <div id="st-badge" class="status-badge idle">
+                <span class="st-dot"></span>
+                <div class="st-labels">
+                  <span id="st-uk" class="st-uk">—</span>
+                  <span id="st-en" class="st-en">—</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="st-run-ref" class="st-run-ref mono">—</div>
+
+            <div class="status-progress-block">
+              <div class="status-bar-row">
+                <span id="st-pct-label" class="pct-big mono">0%</span>
+                <span id="st-count" class="mono">0 / 0</span>
+              </div>
+              <div class="track status-track"><div id="st-bar" class="bar"></div></div>
+            </div>
+
+            <div class="status-grid">
+              <div class="stat-cell ok">
+                <span id="st-ok" class="stat-val mono">0</span>
+                <span class="stat-lbl">OK</span>
+              </div>
+              <div class="stat-cell err">
+                <span id="st-err" class="stat-val mono">0</span>
+                <span class="stat-lbl">ERR</span>
+              </div>
+              <div class="stat-cell skip">
+                <span id="st-skip" class="stat-val mono">0</span>
+                <span class="stat-lbl">SKIP</span>
+              </div>
+              <div class="stat-cell pend">
+                <span id="st-pend" class="stat-val mono">0</span>
+                <span class="stat-lbl">PEND</span>
+              </div>
+            </div>
+
+            <details class="status-more">
+              <summary>Деталі / Details</summary>
+              <div class="status-details">
+                <div class="detail-row full">
+                  <span class="detail-lbl">Зараз / Current</span>
+                  <span id="st-current" class="detail-val mono">—</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-lbl">Universe</span>
+                  <span id="st-universe" class="detail-val">—</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-lbl">TF × Strat</span>
+                  <span id="st-scope" class="detail-val mono">—</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-lbl">Сесія</span>
+                  <span id="st-session" class="detail-val">—</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-lbl">Started</span>
+                  <span id="st-started" class="detail-val mono">—</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-lbl">Updated</span>
+                  <span id="st-updated" class="detail-val mono">—</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-lbl">Finished</span>
+                  <span id="st-finished" class="detail-val mono">—</span>
+                </div>
+                <div class="detail-row full">
+                  <span class="detail-lbl">Message</span>
+                  <span id="st-message" class="detail-val mono">—</span>
+                </div>
+              </div>
+            </details>
+          </section>
+        </div>
+
+        <section class="section-block">
+          <h2 class="section-title">Інші режими / Other modes</h2>
+          <div id="modes-grid" class="modes-grid">завантаження…</div>
+        </section>
+
+        <details class="guide-panel card" id="guide-widget">
+          <summary class="guide-summary">
+            <span>📋 Довідка / Help &amp; troubleshooting</span>
+            <span class="guide-summary-sub">запуск · зупинка · поломки / launch · stop · fixes</span>
+          </summary>
+          <div class="guide-body">
+            <div class="guide-flow">
+              <div class="flow-step">
+                <span class="flow-n">1</span>
+                <div>
+                  <strong>Setup</strong> — Bootstrap → Preflight → <code>./start.sh</code>
+                  <span class="guide-en">One-time data copy &amp; health check</span>
+                </div>
+              </div>
+              <div class="flow-step">
+                <span class="flow-n">2</span>
+                <div>
+                  <strong>Launch</strong> — кнопка 2/4/6/8h або ∞ зліва
+                  <span class="guide-en">Click duration button in Launch card</span>
+                </div>
+              </div>
+              <div class="flow-step">
+                <span class="flow-n">3</span>
+                <div>
+                  <strong>Monitor</strong> — статус справа (OK / ERR / SKIP / PEND)
+                  <span class="guide-en">Watch Status card on the right</span>
+                </div>
+              </div>
+              <div class="flow-step">
+                <span class="flow-n">4</span>
+                <div>
+                  <strong>Stop</strong> — ⏸ Stop зберігає прогрес → ▶ Resume
+                  <span class="guide-en">Pause anytime, continue later</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fix-grid">
+              <div class="fix-item">
+                <span class="fix-sym">⚠ No data</span>
+                <button type="button" class="linkish" data-act="bootstrap">Bootstrap</button>
+              </div>
+              <div class="fix-item">
+                <span class="fix-sym">⏸ Stale / paused</span>
+                <button type="button" class="linkish" data-act="resume">Resume</button>
+              </div>
+              <div class="fix-item">
+                <span class="fix-sym">✗ Preflight fail</span>
+                <button type="button" class="linkish" data-act="preflight">Preflight</button>
+              </div>
+              <div class="fix-item">
+                <span class="fix-sym">⚡ Quick test</span>
+                <button type="button" class="linkish" data-act="smoke">Smoke</button>
+              </div>
+              <div class="fix-item wide">
+                <span class="fix-sym">Many ERR</span>
+                <span class="fix-note">нормально — тикери без свечей / normal, no candles</span>
+              </div>
+              <div class="fix-item wide">
+                <span class="fix-sym">UI frozen</span>
+                <span class="fix-note"><code>./start.sh</code> — один порт 8900</span>
+              </div>
+            </div>
+
+            <details class="guide-cli">
+              <summary>Terminal</summary>
+              <pre class="guide-pre mono"><code>cd .
+./start.sh bootstrap
+./start.sh preflight
+./start.sh smoke
+./start.sh              # → http://127.0.0.1:8900
+./start.sh test</code></pre>
+            </details>
+          </div>
+        </details>
+
+        <details class="advanced card">
+          <summary class="guide-summary">⚙ Розширені / Advanced settings</summary>
+        <form id="run-form" class="form">
+          <label>
+            <span>Universe</span>
+            <select name="universe">
+              <option value="full" selected>full (~весь каталог)</option>
+              <option value="seed">seed (qualified ∪ top)</option>
+              <option value="qualified">qualified</option>
+              <option value="top">top</option>
+            </select>
+          </label>
+          <label>
+            <span>Candle limit</span>
+            <input name="candle_limit" type="number" value="1600" min="800" max="8000" step="200" />
+          </label>
+          <label>
+            <span>Cash</span>
+            <input name="cash" type="number" value="10" step="0.1" />
+          </label>
+          <label>
+            <span>Fee</span>
+            <input name="fee_rate" type="number" value="0.001" step="0.0001" />
+          </label>
+          <label>
+            <span>Stop-loss % (пусто = выкл)</span>
+            <input name="stop_loss_pct" type="number" step="0.1" min="0.5" max="3" placeholder="off" />
+          </label>
+          <label class="check">
+            <input name="save_trades" type="checkbox" />
+            <span>Сохранять сделки (тяжелее)</span>
+          </label>
+
+          <fieldset>
+            <legend>Timeframes</legend>
+            <label class="check"><input type="checkbox" name="tf" value="1h" checked /> 1h</label>
+            <label class="check"><input type="checkbox" name="tf" value="4h" checked /> 4h</label>
+            <label class="check"><input type="checkbox" name="tf" value="1d" checked /> 1d</label>
+            <label class="check"><input type="checkbox" name="tf" value="30m" /> 30m</label>
+          </fieldset>
+
+          <fieldset class="full">
+            <legend>Strategies</legend>
+            <div id="strat-box" class="checks"></div>
+          </fieldset>
+
+          <label class="full">
+            <span>Свой список (опционально, CSV) — перекрывает universe</span>
+            <textarea name="symbols" rows="2" placeholder="LNKS.US, WULF.US, DFTK.DE"></textarea>
+          </label>
+
+          <div class="actions full">
+            <button type="submit" class="btn">Custom run</button>
+          </div>
+        </form>
+        </details>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="tab-settings" class="panel">
+        <header class="settings-hero">
+          <h1>Налаштування бэктесту / Backtest settings</h1>
+          <p class="lead">Свічки для прогону · зберігається в браузері · застосовується при Launch</p>
+        </header>
+
+        <div class="card settings-card">
+          <h2 class="section-title">Кількість свечей / Candle count</h2>
+          <p class="settings-note" id="settings-candle-note">завантаження…</p>
+
+          <div class="candle-preset-grid" id="candle-preset-grid">
+            <button type="button" class="candle-preset" data-limit="800">800</button>
+            <button type="button" class="candle-preset" data-limit="1000">1000</button>
+            <button type="button" class="candle-preset" data-limit="1600">1600</button>
+            <button type="button" class="candle-preset" data-limit="2000">2000</button>
+            <button type="button" class="candle-preset" data-limit="3000">3000</button>
+            <button type="button" class="candle-preset" data-limit="4000">4000</button>
+            <button type="button" class="candle-preset" data-limit="6000">6000</button>
+            <button type="button" class="candle-preset" data-limit="8000">8000</button>
+            <button type="button" class="candle-preset max" data-limit="max">MAX</button>
+          </div>
+
+          <div class="settings-current">
+            <span class="detail-lbl">Обрано / Selected</span>
+            <span id="settings-candle-val" class="settings-val mono">—</span>
+          </div>
+
+          <label class="settings-range">
+            <span>Точне значення / Custom (800–8000)</span>
+            <input id="settings-candle-range" type="range" min="800" max="8000" step="200" value="1600" />
+            <span id="settings-candle-range-label" class="mono">1600</span>
+          </label>
+        </div>
+
+        <div class="card settings-card">
+          <h2 class="section-title">Локальні дані / Prefetch (OHLCV + індикатори)</h2>
+          <p class="settings-note" id="prefetch-note">докачка 1h / 4h / 1d · 1600 барів з RSI/MACD/BB/…</p>
+          <div class="prefetch-actions">
+            <button type="button" class="btn" id="prefetch-seed-btn">Prefetch seed (~20)</button>
+            <button type="button" class="btn secondary" id="prefetch-full-btn">Prefetch full</button>
+            <button type="button" class="btn ghost" id="prefetch-stop-btn">Stop</button>
+          </div>
+          <div class="prefetch-progress">
+            <div class="prefetch-bar"><div id="prefetch-bar-fill" class="prefetch-bar-fill"></div></div>
+            <div id="prefetch-status" class="mono settings-note">idle</div>
+          </div>
+          <ul class="settings-list">
+            <li>Store: <span id="vero-store-info" class="mono">—</span></li>
+          </ul>
+        </div>
+
+        <div class="card settings-card">
+          <h2 class="section-title">Режим даних / Data mode</h2>
+          <div id="settings-offline-info" class="offline-banner">—</div>
+          <ul class="settings-list">
+            <li>Yahoo fallback: <span id="settings-yahoo" class="mono">—</span></li>
+            <li>Require local: <span id="settings-local" class="mono">—</span></li>
+            <li>Local max bars: <span id="settings-loc-max" class="mono">—</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- CHART (local store) -->
+      <section id="tab-chart" class="panel">
+        <header class="settings-hero">
+          <h1>Local chart</h1>
+          <p class="lead">Свічки + EMA / BB / RSI з vero_bars.db · без мережі</p>
+        </header>
+        <div class="card settings-card">
+          <div class="chart-controls">
+            <label>
+              <span>Symbol</span>
+              <select id="chart-symbol"></select>
+            </label>
+            <label>
+              <span>TF</span>
+              <select id="chart-tf">
+                <option value="1h">1h</option>
+                <option value="4h" selected>4h</option>
+                <option value="1d">1d</option>
+              </select>
+            </label>
+            <label>
+              <span>Bars</span>
+              <input id="chart-bars" type="number" min="40" max="800" step="20" value="160" />
+            </label>
+            <button type="button" class="btn" id="chart-draw-btn">Draw</button>
+          </div>
+          <p id="chart-meta" class="settings-note mono">—</p>
+          <div class="chart-frame">
+            <img id="chart-img" alt="local chart" hidden />
+          </div>
+        </div>
+      </section>
+
+      <!-- SIGNALS / PAPER -->
+      <section id="tab-signals" class="panel">
+        <header class="signals-hero">
+          <h1>Signals / Paper</h1>
+          <p class="lead">Telegram-сигнали з графіками · бумажна торгівля · learn samples</p>
+        </header>
+
+        <div class="signals-grid">
+          <div class="card signals-card">
+            <h2 class="section-title">Telegram</h2>
+            <div id="tg-status-banner" class="tg-banner">завантаження…</div>
+            <ol class="tg-steps">
+              <li>Напиши боту <strong>/start</strong> у Telegram</li>
+              <li>Натисни <em>Discover chat_id</em> нижче</li>
+              <li>Скопіюй <code>chat_id</code> у <code>.env</code> → <code>TELEGRAM_CHAT_ID=…</code></li>
+              <li>Перезапусти сервер: <code>./start.sh server</code></li>
+            </ol>
+            <div class="actions signals-actions">
+              <button type="button" id="btn-tg-discover" class="btn">Discover chat_id</button>
+              <button type="button" id="btn-signal-scan" class="btn primary">Scan now</button>
+            </div>
+            <div id="tg-discover-out" class="tg-discover muted">—</div>
+          </div>
+
+          <div class="card signals-card">
+            <h2 class="section-title">Paper portfolio</h2>
+            <div id="paper-summary" class="paper-stats">—</div>
+            <h3 class="signals-sub">Open positions</h3>
+            <div class="table-wrap">
+              <table id="paper-positions-table">
+                <thead>
+                  <tr>
+                    <th>Symbol</th><th>TF</th><th>Strategy</th>
+                    <th>Entry</th><th>Stop</th><th>Qty</th>
+                  </tr>
+                </thead>
+                <tbody><tr><td colspan="6">—</td></tr></tbody>
+              </table>
+            </div>
+            <h3 class="signals-sub">Recent trades</h3>
+            <div class="table-wrap">
+              <table id="paper-trades-table">
+                <thead>
+                  <tr>
+                    <th>Time</th><th>Side</th><th>Symbol</th><th>TF</th>
+                    <th>Price</th><th>PnL %</th><th>Reason</th>
+                  </tr>
+                </thead>
+                <tbody><tr><td colspan="7">—</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card signals-card">
+          <div class="signals-head-row">
+            <h2 class="section-title">Watchlist</h2>
+            <span id="watch-count" class="muted">—</span>
+          </div>
+          <div class="table-wrap">
+            <table id="watchlist-table">
+              <thead>
+                <tr>
+                  <th>Symbol</th><th>TF</th><th>Strategy</th><th>Source</th><th>OOS %</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="5">—</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card signals-card">
+          <div class="signals-head-row">
+            <h2 class="section-title">Recent signals</h2>
+            <button type="button" id="btn-signals-refresh" class="btn">Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table id="signals-table">
+              <thead>
+                <tr>
+                  <th>Time</th><th>Type</th><th>Symbol</th><th>TF</th><th>Strategy</th>
+                  <th>Price</th><th>Stop</th><th>TG</th><th>Chart</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="9">—</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESULTS -->
+      <section id="tab-results" class="panel">
+        <h1>Results</h1>
+        <p class="lead">Прогон 7 стратегий на локальных свечах. Фильтры и клик по колонке — сортировка.</p>
+        <p id="results-run-line" class="muted">прогон…</p>
+        <div class="filters" id="results-filters">
+          <select id="f-run" title="Какой прогон показывать">
+            <option value="latest">latest run</option>
+            <option value="">all runs</option>
+          </select>
+          <input id="f-symbol" placeholder="symbol" />
+          <select id="f-tf">
+            <option value="">all TF</option>
+            <option>1h</option><option>4h</option><option>1d</option><option>30m</option>
+          </select>
+          <select id="f-strat"><option value="">all strategies</option></select>
+          <input id="f-oos" type="number" placeholder="min OOS %" step="0.1" />
+          <input id="f-pf" type="number" placeholder="min PF" step="0.1" />
+          <input id="f-wr" type="number" placeholder="min WR %" step="1" />
+          <input id="f-dd" type="number" placeholder="max DD %" step="0.5" />
+          <input id="f-n" type="number" placeholder="min n" step="1" min="0" />
+          <select id="f-limit" title="Сколько строк">
+            <option value="100">100</option>
+            <option value="300" selected>300</option>
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+          </select>
+          <label class="check live-toggle" title="Обновлять таблицу, пока идёт прогон">
+            <input type="checkbox" id="f-live" checked /> live
+          </label>
+          <button type="button" id="btn-load-results" class="btn primary">Load</button>
+        </div>
+        <div class="table-wrap results-wrap">
+          <table id="results-table" class="results-table">
+            <thead>
+              <tr>
+                <th class="col-sym sortable" data-sort="symbol">Symbol</th>
+                <th class="col-tf sortable" data-sort="timeframe">TF</th>
+                <th class="col-strat sortable" data-sort="strategy">Strat</th>
+                <th class="num sortable" data-sort="oos_return_pct" title="Out-of-sample return %">OOS%</th>
+                <th class="num sortable" data-sort="return_pct" title="Full-sample return %">Ret%</th>
+                <th class="num sortable" data-sort="oos_profit_factor" title="OOS profit factor (∞ = no losses)">PF</th>
+                <th class="num sortable" data-sort="oos_winrate_pct" title="OOS winrate %">WR%</th>
+                <th class="num sortable" data-sort="oos_max_dd_pct" title="OOS max drawdown %">DD%</th>
+                <th class="num sortable" data-sort="oos_closed" title="OOS closed rounds">n</th>
+                <th class="col-act"></th>
+              </tr>
+            </thead>
+            <tbody><tr><td colspan="10">Нет данных</td></tr></tbody>
+          </table>
+        </div>
+        <p id="results-meta" class="muted"></p>
+      </section>
+
+      <!-- TOP -->
+      <section id="tab-top" class="panel">
+        <h1 title="Два списка: Auto — честный топ после прогона SL 1.5%; User list — ваш watchlist.">My Top</h1>
+        <p class="lead" title="Сначала prefetch 1h/4h/1d. Потом ручной локальный прогон со стопом 1.5%. Топ-38. Сверка стопов/тейков — отдельная кнопка.">
+          Правда: стоп 1.5%. Тейк = факт % по сигналу SELL. Сверка — по выбору после топ-38.
+        </p>
+
+        <div class="card truth-card" id="truth-card">
+          <h2 title="Локальный бэктест всего каталога 1h/4h/1d × 7 стратегий со стопом −1.5%. Не стартует сам — только эта кнопка, и только после prefetch done.">Прогон правда · SL 1.5%</h2>
+          <p id="truth-status" class="muted">проверяю prefetch…</p>
+          <div class="actions">
+            <button type="button" id="btn-truth-run" class="btn primary" disabled
+              title="Старт только когда prefetch = done. Full catalog, ТФ 1h/4h/1d, стоп 1.5%, сделки пишутся в БД. Цикл без лимита часов — Stop сохраняет прогресс.">
+              Прогон правда SL 1.5%
+            </button>
+            <button type="button" id="btn-truth-verify" class="btn" disabled
+              title="После появления топ-38: по локальным high/low проверить каждый стоп (−1.5%) и каждый тейк (факт %). Не пересчитывает рейтинг.">
+              Сверить стопы/тейки
+            </button>
+            <button type="button" id="btn-auto-top" class="btn"
+              title="Обновить таблицу Auto из честного прогона (если его ещё нет — таблица пустая).">
+              Refresh auto-top
+            </button>
+          </div>
+        </div>
+
+        <h2 title="Машина: 1 лучшая связка на тикер из прогона SL 1.5%. Пока прогона нет — пусто, старый топ без стопа сюда не показываем.">Auto · top 38</h2>
+        <div class="table-wrap">
+          <table id="auto-top-table">
+            <thead>
+              <tr>
+                <th class="tip" title="Место по OOS % со стопом 1.5%. 1 строка = лучшая связка ТФ+стратегия.">#</th>
+                <th class="tip" title="Тикер XTB.">Symbol</th>
+                <th class="tip" title="Таймфрейм бэктеста: 1h, 4h или 1d.">TF</th>
+                <th class="tip" title="Стратегия этой строки.">Strategy</th>
+                <th class="num tip" title="OOS % уже со стопом 1.5% — прибыль на отложенной выборке.">OOS %</th>
+                <th class="num tip" title="Сколько кругов закрыто стопом −1.5%.">Stop</th>
+                <th class="num tip" title="Сколько кругов закрыто сигналом SELL (тейк).">Take</th>
+                <th class="num tip" title="Средний % тейка (выходы по сигналу, не стопы).">Avg take</th>
+                <th class="num tip" title="PF — profit factor OOS.">PF</th>
+                <th class="num tip" title="WR — winrate OOS %.">WR</th>
+                <th class="num tip" title="DD — max drawdown OOS %.">DD</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p id="truth-verify-meta" class="muted" hidden></p>
+        <div class="table-wrap" id="truth-verify-wrap" hidden>
+          <table id="truth-verify-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Symbol</th><th>TF</th><th>OK</th><th>Fail</th><th>Note</th><th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="truth-audit-chart-box" class="truth-chart" hidden>
+          <img id="truth-audit-chart" alt="audit chart" />
+        </div>
+        <h2 title="Ваш watchlist. Сканер сигналов читает его первым (SIGNAL_WATCH = user/both). Score — ваш приоритет, не OOS. Сюда же попадает кнопка +top из Results.">User list</h2>
+        <form id="user-top-form" class="form inline">
+          <label class="tip" title="Тикер как в каталоге XTB, латиницей. Сохранится в UPPERCASE. Пример: NVDA.US, EURUSD.">
+            <span>Symbol</span>
+            <input name="symbol" placeholder="AAPL.US" required autocomplete="off" />
+          </label>
+          <label class="tip" title="Таймфрейм для сканера: 30m, 1h, 4h или 1d. Пусто → сканер подставит 1h. / Signal timeframe.">
+            <span>TF</span>
+            <input name="timeframe" placeholder="1h" list="top-tf-list" />
+          </label>
+          <datalist id="top-tf-list">
+            <option value="30m"></option>
+            <option value="1h"></option>
+            <option value="4h"></option>
+            <option value="1d"></option>
+          </datalist>
+          <label class="tip" title="Id стратегии: rsi_mean_reversion, macd_crossover, bb_squeeze, stoch_mean_reversion, ema_crossover, cci_mean_reversion, willr_mean_reversion. Пусто → сканер подставит rsi_mean_reversion.">
+            <span>Strategy</span>
+            <input name="strategy" placeholder="rsi_mean_reversion" list="top-strat-list" />
+          </label>
+          <datalist id="top-strat-list">
+            <option value="rsi_mean_reversion"></option>
+            <option value="macd_crossover"></option>
+            <option value="bb_squeeze"></option>
+            <option value="stoch_mean_reversion"></option>
+            <option value="ema_crossover"></option>
+            <option value="cci_mean_reversion"></option>
+            <option value="willr_mean_reversion"></option>
+          </datalist>
+          <label class="tip" title="Свободный комментарий: почему в списке, идея входа, источник. Не влияет на расчёт. / Free note.">
+            <span>Note</span>
+            <input name="note" placeholder="why this pair" />
+          </label>
+          <label class="tip" title="Ваш приоритет, не доходность. Сканер и таблица сортируют по score (больше = выше). Из Results подставляется OOS %. / Watchlist priority, not OOS.">
+            <span>Score</span>
+            <input name="score" type="number" value="1" step="0.1" />
+          </label>
+          <button class="btn primary" type="submit"
+            title="Добавить или обновить строку. Уникальность: symbol + TF + strategy. Повтор с теми же полями перезапишет note и score. / Insert or upsert.">
+            Add
+          </button>
+        </form>
+        <div class="table-wrap">
+          <table id="user-top-table">
+            <thead>
+              <tr>
+                <th class="tip" title="Тикер в вашем watchlist. / Watchlist symbol.">Symbol</th>
+                <th class="tip" title="Таймфрейм, с которым сканер будет искать сигнал. Пусто в таблице = не задан (сканер возьмёт 1h).">TF</th>
+                <th class="tip" title="Стратегия сканера для этой строки. Пусто = rsi_mean_reversion.">Strategy</th>
+                <th class="tip" title="Ваш комментарий. / Your note.">Note</th>
+                <th class="tip" title="Приоритет в очереди сканера и сортировке списка. Больше = выше. Это не OOS %. / Priority score.">Score</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- HISTORY -->
+      <section id="tab-history" class="panel">
+        <h1>History</h1>
+        <p class="lead">Все прогоны: параметры, прогресс, статус. Resume для paused.</p>
+        <div class="table-wrap">
+          <table id="runs-table">
+            <thead>
+              <tr>
+                <th>ID</th><th>Tag</th><th>Status</th><th>Universe</th>
+                <th>Done</th><th>OK</th><th>Err</th><th>Created</th><th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- LEARN -->
+      <section id="tab-learn" class="panel">
+        <h1>Learn</h1>
+        <p class="lead">Фичи сделок → кластеры паттернов → правила риска (allow / reduce / deny).</p>
+        <div id="learn-summary" class="stats">—</div>
+        <div class="actions">
+          <label>Clusters <input id="n-clusters" type="number" value="8" min="2" max="24" /></label>
+          <button type="button" id="btn-cluster" class="btn primary">Build clusters + rules</button>
+          <button type="button" id="btn-rules" class="btn">Refresh rules</button>
+        </div>
+        <h2>Clusters</h2>
+        <div class="table-wrap">
+          <table id="clusters-table">
+            <thead>
+              <tr>
+                <th>ID</th><th>Size</th><th>Good%</th><th>Avg OOS</th><th>PF</th><th>DD</th><th>Action</th><th>Rationale</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <h2>Risk rules</h2>
+        <div class="table-wrap">
+          <table id="rules-table">
+            <thead>
+              <tr><th>Scope</th><th>Key</th><th>Name</th><th>On</th><th>Payload</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
